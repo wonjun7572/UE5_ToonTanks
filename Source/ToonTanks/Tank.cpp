@@ -1,30 +1,32 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
+
 #include "Tank.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Components/InputComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ATank::ATank()
 {
-     m_SpringArm = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
-     m_SpringArm->SetupAttachment(RootComponent);
+    SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
+    SpringArm->SetupAttachment(RootComponent);
 
-     m_Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
-     m_Camera->SetupAttachment(m_SpringArm);
+    Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+    Camera->SetupAttachment(SpringArm);
+}
+
+void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+    PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ATank::Move);
 }
 
 void ATank::Move(float Value)
 {
-     FVector DeltaLocation(0.f);
-     // X = Value * DeltaTime * Speed
-	DeltaLocation.X = Value * UGameplayStatics::GetWorldDeltaSeconds(this) * m_fSpeed;
-	AddActorLocalOffset(DeltaLocation);
-}
-
-void ATank::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
-     Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-     PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ATank::Move);
+    FVector DeltaLocation = FVector::ZeroVector;
+    // X = Value * DeltaTime * Speed
+    DeltaLocation.X = Value * Speed * UGameplayStatics::GetWorldDeltaSeconds(this);
+    AddActorLocalOffset(DeltaLocation);
 }
