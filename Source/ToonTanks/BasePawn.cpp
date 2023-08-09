@@ -4,6 +4,9 @@
 #include "BasePawn.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Projectile.h"
+//#include "DrawDebugHelpers.h"
 
 // Sets default values
 ABasePawn::ABasePawn()
@@ -24,15 +27,39 @@ ABasePawn::ABasePawn()
 	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
 }
 
-// Called when the game starts or when spawned
-void ABasePawn::BeginPlay()
+void ABasePawn::RotateTurret(FVector LookAtTarget)
 {
-	Super::BeginPlay();
+	FVector ToTarget = LookAtTarget - TurretMesh->GetComponentLocation();
+	FRotator LookAtRotation = FRotator(0.f, ToTarget.Rotation().Yaw, 0.f);
+	// FMath::RInterpTo -> Rotation 보간함수 
 	
+	TurretMesh->SetWorldRotation(
+		FMath::RInterpTo(TurretMesh->GetComponentRotation(),
+		LookAtRotation, 
+		UGameplayStatics::GetWorldDeltaSeconds(this),
+		25.f));
 }
 
-// Called every frame
-void ABasePawn::Tick(float DeltaTime)
+void ABasePawn::Fire()
 {
-	Super::Tick(DeltaTime);
+	FVector ProjectileSpawnPointLocation = ProjectileSpawnPoint->GetComponentLocation();
+	FRotator ProjectileSpawnPointRotation = ProjectileSpawnPoint->GetComponentRotation();
+
+    // DrawDebugSphere(
+    //         GetWorld(),
+    //         ProjectileSpawnPointLocation,
+    //         25.f,
+    //         12,
+    //         FColor::Green,
+    //         true,
+    //         3.f);
+
+
+	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+		ProjectileClass, 
+		ProjectileSpawnPointLocation,
+		ProjectileSpawnPointRotation
+	);
+
+	Projectile->SetOwner(this);	
 }
