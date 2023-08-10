@@ -31,7 +31,7 @@ void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void ATank::BeginPlay()
 {
 	Super::BeginPlay();
-    PlayerControllerRef = Cast<APlayerController>(GetController());
+    TankPlayerController = Cast<APlayerController>(GetController());
 }
 
 // Called every frame
@@ -39,27 +39,35 @@ void ATank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    if(PlayerControllerRef)
+    if(TankPlayerController)
     {
         FHitResult HitResult;
         
-        bool bHit = PlayerControllerRef->GetHitResultUnderCursor(
+        bool bHit = TankPlayerController->GetHitResultUnderCursor(
             ECollisionChannel::ECC_Visibility,
             false,
             HitResult);
 
         if(bHit)
         {
-            DrawDebugSphere(
+            /*DrawDebugSphere(
                 GetWorld(),
                 HitResult.ImpactPoint,
                 25.f,
                 12,
-                FColor::Red);
+                FColor::Red);*/
 
             RotateTurret(HitResult.ImpactPoint);    
         }
     }
+}
+
+void ATank::HandleDestruction()
+{
+    Super::HandleDestruction();
+    SetActorHiddenInGame(true); // 게임에서 안보이게 하는 함수
+    SetActorTickEnabled(false); // 틱을 꺼버리는 함수
+    bAlive = false;
 }
 
 void ATank::Move(float Value)

@@ -20,6 +20,8 @@ protected:
 
 	void Fire();
 
+	virtual void HandleDestruction();
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	class UCapsuleComponent* CapsuleComp;
@@ -32,6 +34,15 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<class AProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class UParticleSystem* DeadParticles;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class USoundBase* DeathSound;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<class UCameraShakeBase> DeathCameraShakeClass;
 
 	// 인스턴스 -> 디테일 패널, 디폴트 -> 블루프린트의 디테일 패널
 

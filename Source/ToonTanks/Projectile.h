@@ -36,6 +36,21 @@ private:
 	UPROPERTY(EditAnywhere)
 	float Damage = 50.f;
 
+	UPROPERTY(EditAnywhere, Category= "Combat")
+	class UParticleSystem* HitParticles;
+
+	UPROPERTY(VisibleAnywhere, Category= "Combat")
+	class UParticleSystemComponent* SmokeTrail;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class USoundBase* LaunchSound;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	class USoundBase* HitSound;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TSubclassOf<class UCameraShakeBase> HitCameraShakeClass;
+
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movements", meta = (AllowPrivateAccess = "true"))
 	// float InitialSpeed = 1300.f;
 

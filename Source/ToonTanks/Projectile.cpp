@@ -5,6 +5,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -18,6 +19,9 @@ AProjectile::AProjectile()
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
 	ProjectileMovementComponent->InitialSpeed = 1300.f;
 	ProjectileMovementComponent->MaxSpeed = 1300.f;
+
+	SmokeTrail = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("SmokeTrail"));
+	SmokeTrail->SetupAttachment(BaseMesh);
 }
 
 // Called when the game starts or when spawned
@@ -26,6 +30,9 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	BaseMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+
+	if(LaunchSound)
+		UGameplayStatics::PlaySoundAtLocation(this, LaunchSound, GetActorLocation(), GetActorRotation());
 }
 
 // Called every frame
@@ -41,18 +48,33 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	// FString OtherCompString = OtherComp->GetName();
 	// UE_LOG(LogTemp, Display, TEXT("HitComp : %s , OtherActor : %s , OtherComp : %s"), *HitCompString, *OtherActorString, *OtherCompString);
 
-	auto MyOwner = GetOwner();
+	AActor* MyOwner = GetOwner();
 	
-	if(MyOwner == nullptr) 
-		return;	
+	if(MyOwner == nullptr)
+	{
+		Destroy();
+		return;
+	}
 
-	auto MyOwnerInstigator = MyOwner->GetInstigatorController();
-	auto DamageTypeClass = UDamageType::StaticClass();
+	AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
+	UClass* DamageTypeClass = UDamageType::StaticClass();
 
 	if(OtherActor && OtherActor != this && OtherActor != MyOwner)
 	{
 		//AActor* DamagedActor, float BaseDamage, AController* EventInstigator, AActor* DamageCauser, TSubclassOf<UDamageType> DamageTypeClass
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
-		Destroy();
+
+		if(HitParticles)
+			UGameplayStatics::SpawnEmitterAtLocation(this, HitParticles, GetActorLocation(), GetActorRotation());
+
+		if(HitSound)
+			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation(), GetActorRotation());
+
+		if(HitCameraShakeClass)
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShakeClass);
+		}
 	}
+
+	Destroy();
 }
